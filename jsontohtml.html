@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>JSON to HTML Converter</title>
+		<style>
+		/*determines how much we want to indent by*/
+		.indented { padding-left: 50px; }
+		</style>
+	</head>
+
+	<body>
+	<script>
+
+	/** 
+	* converts any array in the json to html
+	* doesn't return anything to script, but writes each non-paired and non-object
+	* value that lives in the array, to the html doc
+	*
+	* @param {Array} obj -  the full array that was encountered in the json
+	*
+	* recursive function with convertDict()
+	* Array is 1 of the possible object container types that we may stumble 
+	* upon in the json string, and it can have unlimited nests too
+	*
+	*/
+	function convertArray(obj) {
+		// iterate through the items in the array (uses index)
+		for (let key in obj) {
+			// initialize val to be the value at that index 
+			let val = obj[key];
+			// if it's an array
+			if (Array.isArray(val)) {
+				/* 
+				* decided not to indent or assign another div class if it's 
+				* an array in an array because it feels unnecessary/redundant
+				* but if i did:
+				*
+				* document.write(`<div class = "indented ${head}">`);
+				*
+				* where head is the key of the last dict the array was part of
+				*/
+				convertArray(val,head);
+				// document.write('</div>');
+			} 
+			// if it's not an array, but is an object, it's a dict/map
+			else if (typeof(val)=='object') {
+				// assign the div class of this dict to be its key
+				document.write(`<div class = ${key}>`);
+				convertDict(val);
+				document.write('</div>');
+				// draws lines after each dict item for easier readability
+				document.write('<hr>');
+			} 
+			// if it's not an object then it's just a value
+			else {
+				// we can write it to html doc easily
+				document.write(`${val}</br>`);
+			}
+		}
+	}
+
+	/** 
+	* converts any dict in the json to html
+	* doesn't return anything to script, but writes to each key, value pair
+	* that lives in the dict, to the html doc
+	*
+	* @param {Object} obj -  the full object that was encountered in the json
+	* preferably a dict but can take array if necessary 
+	* e.g. if json starts w array
+	*
+	* recursive function with convertArray()
+	* Dict/map is 1 of the possible object container types that we may stumble 
+	* upon in the json string, which can have unlimited nests too
+	*
+	*/
+	function convertDict(obj) {
+		// iterate through the items in the dict (uses dict keys)
+		for (let key in obj) {
+			// write the key in bold to html doc
+			document.write(`<b>${key}: </b>`);
+			// initialize val to be value pair at that key
+			let val = obj[key];
+			// for unnecessary arrays, we take it out of its array to keep consistent formatting
+			if (Array.isArray(val) && val.length == 1){
+				val = val[0];
+			}
+			// if it's an array
+			if (Array.isArray(val)){
+				// add an indent for easier readability and assign div class to be key
+				document.write(`<div class = "indented ${key}">`);
+				convertArray(val);
+				document.write('</div>');
+			} 
+			// if it's not an array but is an object, it's a dict/map 
+			else if (typeof(val)=='object') {
+				// add an indent for easier readability and assign div class to be key
+				document.write(`<div class = "indented ${key}">`);
+				convertDict(val);
+				document.write('</div>');
+			} 
+			// if it's not an object, then it's key,value pair by itself
+			else {
+				// we can write it to html doc easily
+				document.write(`<span class = ${key}>${val}</span><br>`);
+			}
+		}
+	}
+
+
+	// example json strings for testing purposes below; borrowed from various websites
+
+	// const json = '[{"book":{"name":"Harry Potter and the Goblet of Fire","author":"J.K. Rowling","year":2000,"characters":["Harry Potter","Hermione Granger","Ron Weasley"],"genre":"Fantasy Fiction","price":{"paperback":"$10.40","hardcover":"$20.32","kindle":"$4.11"}},"story":"hello","next":["what now"]},{"what about us":"what about everything we\'ve been through"}]';
+
+	// const json = '{"book":{"name":"Harry Potter and the Goblet of Fire","author":"J.K. Rowling","year":2000,"characters":["Harry Potter","Hermione Granger","Ron Weasley"],"genre":"Fantasy Fiction","price":{"paperback":"$10.40","hardcover":"$20.32","kindle":"$4.11"},"edition":"4th edition"}}';
+
+	// const json = '{"book":"Harry Potter"}';
+
+	/*
+	* using a random json string to test, the one below
+	* is good for test various types & levels of nested objects in json
+	*/
+	const json = '{"id": "0001","type": "donut","name": "Cake","ppu": 0.55,"batters":{"batter":[{ "id": "1001", "type": ["Regular","Chocolate",["Vanilla","Strawberry"]] },{ "id": "1002", "type": "Chocolate" },{ "id": "1003", "type": "Blueberry" },{ "id": "1004", "type": "Devil\'s Food" }]},"topping":[{ "id": "5001", "type": "None" },{ "id": "5002", "type": "Glazed" },{ "id": "5005", "type": "Sugar" },{ "id": "5007", "type": "Powdered Sugar" },{ "id": "5006", "type": "Chocolate with Sprinkles" },{ "id": "5003", "type": "Chocolate" },{ "id": "5004", "type": "Maple" },["strawberry","chocolate","vanilla","sauces"]]}'
+	
+	// if we need to load json string from external file/path, do so here:
+	// ...
+
+	// convert json string to javascript
+	const parsedObj = JSON.parse(json);
+	// start recursively converting the 
+	convertDict(parsedObj);
+
+	</script>
+	</body>
+</html>
+
